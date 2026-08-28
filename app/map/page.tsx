@@ -66,11 +66,15 @@ export default function MapPage() {
         map = new maplibregl.Map({
           container: "worldmap",
           style: "https://tiles.openfreemap.org/styles/positron",
-          center: [-40, 28],
-          zoom: 1.1,
+          center: [10, 22],
+          zoom: 1.6,
           attributionControl: false,
         });
         mapRef.current = map;
+        // the 3D world: globe projection, drifting in space until we descend
+        map.on("style.load", () => {
+          map.setProjection({ type: "globe" });
+        });
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
 
         const d = await fetch("/api/mappoints").then((r) => r.json());
@@ -202,10 +206,19 @@ export default function MapPage() {
             hard: d.people.length - free,
           });
 
-          // the arrival: from orbit down to the neighborhood
+          // the arrival: spin the globe toward the west coast, then descend
           setTimeout(() => {
-            map.flyTo({ center: [-122.43, 37.7852], zoom: 12.6, duration: 6000, essential: true });
-          }, 900);
+            map.easeTo({ center: [-100, 32], zoom: 2.1, duration: 2600, essential: true });
+          }, 700);
+          setTimeout(() => {
+            map.flyTo({
+              center: [-122.43, 37.7852],
+              zoom: 12.6,
+              duration: 6500,
+              curve: 1.55,
+              essential: true,
+            });
+          }, 3500);
         });
         map.on("error", () => {});
       } catch (err: any) {
