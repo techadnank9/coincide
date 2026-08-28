@@ -94,7 +94,15 @@ export default function MapPage() {
             }
           } catch {}
         });
-        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+        map.addControl(
+          new maplibregl.GeolocateControl({
+            positionOptions: { enableHighAccuracy: true },
+            trackUserLocation: true,
+            showUserLocation: true,
+          }),
+          "top-right",
+        );
 
         const onReady = async () => {
           const d = await fetch("/api/mappoints").then((r) => r.json());
@@ -285,6 +293,13 @@ export default function MapPage() {
           {note}
         </div>
       )}
+
+      <Link href="/ask" className="askFab" aria-label="Ask Coincide who to meet">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" />
+          <path d="M8 11h8M8 14h5" />
+        </svg>
+      </Link>
     </div>
   );
 }

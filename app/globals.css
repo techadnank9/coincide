@@ -1527,3 +1527,54 @@ select {
 .askBubble strong {
   font-weight: 650;
 }
+
+/* map bar: compact, leaves the corners free */
+.mapBar {
+  right: auto;
+  max-width: min(720px, calc(100vw - 92px));
+  padding: 8px 16px;
+  gap: 12px;
+}
+.mapBar .chrome-mark {
+  font-size: 1.15rem;
+}
+.mapShell .maplibregl-ctrl-top-right {
+  top: 10px;
+  right: 10px;
+}
+.askFab {
+  position: absolute;
+  right: 16px;
+  bottom: 24px;
+  z-index: 1001;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: var(--surplus);
+  color: #16120a;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.65);
+  transition: transform 140ms ease-out;
+}
+.askFab:hover {
+  transform: scale(1.06);
+}
+@media (max-width: 860px) {
+  .mapBar {
+    max-width: calc(100vw - 76px);
+    padding: 8px 14px;
+    gap: 8px 10px;
+  }
+  .mapBar .chrome-persona {
+    padding: 4px 9px;
+    font-size: 0.8rem;
+  }
+  .mapBar .slotChip {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
+  .livePanel {
+    right: 84px;
+  }
+}

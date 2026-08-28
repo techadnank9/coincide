@@ -12,10 +12,17 @@ async function matchPeople(query: string): Promise<string> {
   const wantDays = Object.entries(DAY_WORDS)
     .filter(([w]) => q.includes(w) || q.includes(w.slice(0, 3) + " "))
     .map(([, n]) => n);
+  // relative days, in the community's timezone
+  const laNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+  const todayW = laNow.getDay();
+  if (/\btomorrow\b/.test(q)) wantDays.push((todayW + 1) % 7);
+  if (/\btoday\b|\btonight\b/.test(q)) wantDays.push(todayW);
+  if (/\bweekend\b/.test(q)) wantDays.push(0, 6);
+  if (/\bweek\b/.test(q) && !wantDays.length) wantDays.push(1, 2, 3, 4, 5);
   let band: [number, number] | null = null;
   if (/morning/.test(q)) band = [300, 720];
   else if (/afternoon/.test(q)) band = [720, 1020];
-  else if (/evening|night/.test(q)) band = [1020, 1380];
+  else if (/evening|tonight|night/.test(q)) band = [1020, 1380];
 
   const res = await pg.query(
     `SELECT u.id, u.display_name, p.handle, p.bio, p.interests, o.name AS org,
@@ -53,13 +60,23 @@ async function matchPeople(query: string): Promise<string> {
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
 
-  if (!scored.length) {
-    return (
-      `Nobody jumped out for that. Try naming a day, a time of day, or an interest — ` +
-      `for example: "someone free on Tuesday evenings who likes chess" or "morning walkers near me".`
-    );
+  // nothing specific asked, or nothing hit: offer people with open hours anyway
+  let pool = scored;
+  if (!pool.length) {
+    pool = res.rows
+      .map((r) => {
+        const wins = (r.windows as any[]).filter((w) => w.kind === "surplus");
+        return { r, hitTags: [] as string[], wins, score: wins.length };
+      })
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+    if (!pool.length) {
+      return `Nobody jumped out for that. Try a day, a time of day, or an interest — "someone free Tuesday evenings who likes chess", "morning walkers", "anybody free tomorrow".`;
+    }
   }
-  const lines = scored.map(({ r, hitTags, wins }, i) => {
+  const scoredFinal = pool;
+  const lines = scoredFinal.map(({ r, hitTags, wins }, i) => {
     const why = [
       hitTags.length ? `into ${hitTags.join(", ")}` : null,
       wins.length
