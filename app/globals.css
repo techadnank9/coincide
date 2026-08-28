@@ -1387,3 +1387,35 @@ select {
     margin-left: 0;
   }
 }
+.mapShell.dark #worldmap {
+  background: transparent;
+}
+.liveTitle {
+  width: 100%;
+  text-align: left;
+  padding: 0;
+}
+.liveChevron {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.livePanel.closed {
+  padding: 10px 16px;
+  min-width: 0;
+}
+.legendDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  margin-right: 5px;
+  vertical-align: -1px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+.legendDot.dotFree {
+  background: #e0973f;
+}
+.legendDot.dotHard {
+  background: #7fa8d4;
+}

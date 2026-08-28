@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
        LEFT JOIN availability a ON a.user_id = u.id
        WHERE u.lat IS NOT NULL
        GROUP BY u.id, o.name
-       ORDER BY u.org_id = 1 DESC, u.id
+       ORDER BY u.org_id = 1 DESC, u.id > 30000 DESC, u.id
        LIMIT $1`,
       [limit],
     ),

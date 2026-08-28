@@ -27,11 +27,19 @@ export default function MapPage() {
   const mapRef = useRef<any>(null);
   const actMarkersRef = useRef<any[]>([]);
   const liveMarkersRef = useRef<any[]>([]);
+  const popupRef = useRef<any>(null);
+  // one card at a time: opening a new one closes whatever was up
+  const showPopup = (popup: any, map: any) => {
+    popupRef.current?.remove();
+    popupRef.current = popup;
+    popup.addTo(map);
+  };
   const [filter, setFilter] = useState<Filter>("all");
   const [counts, setCounts] = useState({ people: 0, acts: 0, live: 0, free: 0, hard: 0 });
   const [topOrgs, setTopOrgs] = useState<[string, number][]>([]);
   const [me, setMe] = useState<{ id: number; name: string } | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [panelOpen, setPanelOpen] = useState(true);
 
   const join = useCallback(
     async (id: number, title: string) => {
@@ -88,10 +96,9 @@ export default function MapPage() {
         });
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
 
-        const d = await fetch("/api/mappoints").then((r) => r.json());
-        if (disposed) return;
-
-        map.on("load", async () => {
+        const onReady = async () => {
+          const d = await fetch("/api/mappoints").then((r) => r.json());
+          if (disposed) return;
           // everyone, as glowing dots
           map.addSource("people", {
             type: "geojson",
@@ -131,13 +138,15 @@ export default function MapPage() {
                   }</li>`,
               )
               .join("");
-            new maplibregl.Popup({ offset: 10 })
-              .setLngLat(f.geometry.coordinates)
-              .setHTML(
-                `<div class="pop"><b>${f.properties.name}</b><span>${f.properties.org}</span>
-                 <ul>${wins || "<li>No hours listed yet</li>"}</ul></div>`,
-              )
-              .addTo(map);
+            showPopup(
+              new maplibregl.Popup({ offset: 10 })
+                .setLngLat(f.geometry.coordinates)
+                .setHTML(
+                  `<div class="pop"><b>${f.properties.name}</b><span>${f.properties.org}</span>
+                   <ul>${wins || "<li>No hours listed yet</li>"}</ul></div>`,
+                ),
+              map,
+            );
           });
           map.on("mouseenter", "people", () => (map.getCanvas().style.cursor = "pointer"));
           map.on("mouseleave", "people", () => (map.getCanvas().style.cursor = ""));
@@ -156,10 +165,14 @@ export default function MapPage() {
             btn.disabled = a.joined >= a.capacity;
             btn.onclick = () => joinRef.current(a.id, a.title);
             pop.appendChild(btn);
-            return new maplibregl.Marker({ element: el })
-              .setLngLat([a.lng, a.lat])
-              .setPopup(new maplibregl.Popup({ offset: 16 }).setDOMContent(pop))
-              .addTo(map);
+            el.onclick = (ev) => {
+              ev.stopPropagation();
+              showPopup(
+                new maplibregl.Popup({ offset: 16 }).setLngLat([a.lng, a.lat]).setDOMContent(pop),
+                map,
+              );
+            };
+            return new maplibregl.Marker({ element: el }).setLngLat([a.lng, a.lat]).addTo(map);
           });
 
           // the cast: people with faces, out on the map right now
@@ -174,20 +187,22 @@ export default function MapPage() {
               const prof = await fetch(`/api/profile?user_id=${p.id}`).then((r) => r.json());
               const total = prof.attended + prof.no_shows;
               const nextUp = prof.upcoming?.[0];
-              new maplibregl.Popup({ offset: 26, maxWidth: "320px" })
-                .setLngLat([p.lng, p.lat])
-                .setHTML(
-                  `<div class="pop profileCard">
-                     <img src="${avatar(p.name)}" alt="" width="52" height="52" />
-                     <b>${prof.name}</b>
-                     ${prof.handle ? `<span class="popHandle">${prof.handle}</span>` : ""}
-                     ${prof.bio ? `<span class="popBio">${prof.bio}</span>` : ""}
-                     ${total ? `<span class="popStat">Showed up ${prof.attended} of ${total} plans</span>` : ""}
-                     ${nextUp ? `<span class="popNext">Next: ${nextUp.title}</span>` : ""}
-                     <a class="popBtn" href="/people/${p.id}">View profile</a>
-                   </div>`,
-                )
-                .addTo(map);
+              showPopup(
+                new maplibregl.Popup({ offset: 26, maxWidth: "320px" })
+                  .setLngLat([p.lng, p.lat])
+                  .setHTML(
+                    `<div class="pop profileCard">
+                       <img src="${avatar(p.name)}" alt="" width="52" height="52" />
+                       <b>${prof.name}</b>
+                       ${prof.handle ? `<span class="popHandle">${prof.handle}</span>` : ""}
+                       ${prof.bio ? `<span class="popBio">${prof.bio}</span>` : ""}
+                       ${total ? `<span class="popStat">Showed up ${prof.attended} of ${total} plans</span>` : ""}
+                       ${nextUp ? `<span class="popNext">Next: ${nextUp.title}</span>` : ""}
+                       <a class="popBtn" href="/people/${p.id}">View profile</a>
+                     </div>`,
+                  ),
+                map,
+              );
             };
             return new maplibregl.Marker({ element: el }).setLngLat([p.lng, p.lat]).addTo(map);
           });
@@ -221,7 +236,9 @@ export default function MapPage() {
               essential: true,
             });
           }, 3500);
-        });
+        };
+        if (map.loaded()) onReady();
+        else map.once("load", onReady);
         map.on("error", () => {});
       } catch (err: any) {
         setNote(`map failed: ${err?.message ?? err}`);
@@ -271,29 +288,49 @@ export default function MapPage() {
       </header>
 
       {counts.live > 0 && (
-        <aside className="livePanel">
-          <div className="liveTitle">
+        <aside className={`livePanel${panelOpen ? "" : " closed"}`}>
+          <button
+            className="liveTitle"
+            onClick={() => setPanelOpen((o) => !o)}
+            aria-expanded={panelOpen}
+          >
             <i className="liveDot" /> {counts.live} out and about right now
-          </div>
-          <div className="liveRow">
-            <span>Centers</span>
-            <span>
-              {topOrgs.map(([name, n]) => (
-                <em key={name}>{name.replace(/ #\d+$/, "")} ({n})</em>
-              ))}
-            </span>
-          </div>
-          <div className="liveRow">
-            <span>Hours</span>
-            <span>
-              <em className="chipFree">{counts.free} free</em>
-              <em className="chipHardTag">{counts.hard} want company</em>
-            </span>
-          </div>
-          <div className="liveRow">
-            <span>Plans</span>
-            <span><em>{counts.acts} on the board</em></span>
-          </div>
+            <span className="liveChevron">{panelOpen ? "▾" : "▸"}</span>
+          </button>
+          {panelOpen && (
+            <>
+              <div className="liveRow">
+                <span>Dots</span>
+                <span>
+                  <em className="chipFree">
+                    <i className="legendDot dotFree" /> has hours to give
+                  </em>
+                  <em className="chipHardTag">
+                    <i className="legendDot dotHard" /> wants company
+                  </em>
+                </span>
+              </div>
+              <div className="liveRow">
+                <span>Centers</span>
+                <span>
+                  {topOrgs.map(([name, n]) => (
+                    <em key={name}>{name.replace(/ #\d+$/, "")} ({n})</em>
+                  ))}
+                </span>
+              </div>
+              <div className="liveRow">
+                <span>Hours</span>
+                <span>
+                  <em className="chipFree">{counts.free} free</em>
+                  <em className="chipHardTag">{counts.hard} want company</em>
+                </span>
+              </div>
+              <div className="liveRow">
+                <span>Plans</span>
+                <span><em>{counts.acts} on the board</em></span>
+              </div>
+            </>
+          )}
         </aside>
       )}
 
