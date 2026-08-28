@@ -604,3 +604,79 @@ select {
   font-size: 0.88rem;
   font-style: italic;
 }
+
+/* ——— landing ——— */
+.landHero {
+  padding: 96px 0 72px;
+  max-width: 820px;
+}
+.landHero h1 {
+  font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+}
+.landLede {
+  margin-top: 26px;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--ink-2);
+  max-width: 58ch;
+}
+.landCtas {
+  display: flex;
+  gap: 14px;
+  margin-top: 34px;
+  align-items: center;
+}
+.landBtn {
+  text-decoration: none;
+  padding: 11px 22px;
+  font-size: 0.95rem;
+}
+.landBtnGhost {
+  text-decoration: none;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: border-color 120ms ease-out;
+}
+.landBtnGhost:hover {
+  border-color: var(--ink);
+}
+.landProof {
+  margin-top: 30px;
+  font-size: 0.8rem;
+  color: var(--deficit);
+}
+.landHow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 44px;
+  padding: 56px 0;
+  border-top: 1px solid var(--line);
+}
+.landStep h2 {
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+}
+.landStep p {
+  color: var(--ink-2);
+  font-size: 0.93rem;
+  line-height: 1.6;
+}
+.landSafety {
+  border-top: 1px solid var(--line);
+  padding: 56px 0 8px;
+  max-width: 640px;
+}
+.landSafety h2 {
+  font-size: 1.45rem;
+  margin-bottom: 12px;
+}
+.landSafety p {
+  color: var(--ink-2);
+  line-height: 1.65;
+}

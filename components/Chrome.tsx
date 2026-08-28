@@ -50,13 +50,21 @@ export function StatsReadout({ stats }: { stats: QueryStats | null }) {
   );
 }
 
-export default function Chrome({ stats }: { stats?: QueryStats | null }) {
+export default function Chrome({
+  stats,
+  tagline = true,
+}: {
+  stats?: QueryStats | null;
+  tagline?: boolean;
+}) {
   return (
     <header className="chrome">
-      <Link href="/coordinator" className="chrome-mark display">
+      <Link href="/" className="chrome-mark display">
         Coincide
       </Link>
-      <span className="chrome-thesis">We are not matching people. We are routing hours.</span>
+      <span className="chrome-thesis">
+        {tagline ? "We are not matching people. We are routing hours." : ""}
+      </span>
       <Suspense>
         <Nav />
       </Suspense>
