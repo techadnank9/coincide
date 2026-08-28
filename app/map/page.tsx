@@ -91,7 +91,7 @@ export default function MapPage() {
         const d = await fetch("/api/mappoints").then((r) => r.json());
         if (disposed) return;
 
-        map.on("load", () => {
+        map.on("load", async () => {
           // everyone, as glowing dots
           map.addSource("people", {
             type: "geojson",
