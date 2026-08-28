@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import maplibregl from "maplibre-gl";
+import AskChat from "@/components/AskChat";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -40,6 +41,7 @@ export default function MapPage() {
   const [me, setMe] = useState<{ id: number; name: string } | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
+  const [askOpen, setAskOpen] = useState(false);
 
   const join = useCallback(
     async (id: number, title: string) => {
@@ -295,12 +297,29 @@ export default function MapPage() {
         </div>
       )}
 
-      <Link href="/ask" className="askFab" aria-label="Ask Coincide who to meet">
+      {askOpen && (
+        <div className="askPanel">
+          <div className="askPanelHead">
+            <strong>Ask Coincide</strong>
+            <span>
+              <Link href="/ask" className="askPanelBtn" title="Open full page" aria-label="Open full page">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 4h6v6M20 4l-8 8M10 20H4v-6" /></svg>
+              </Link>
+              <button className="askPanelBtn" onClick={() => setAskOpen(false)} aria-label="Close">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M5 5l14 14M19 5L5 19" /></svg>
+              </button>
+            </span>
+          </div>
+          <AskChat compact />
+        </div>
+      )}
+
+      <button className="askFab" aria-label="Ask Coincide who to meet" onClick={() => setAskOpen((o) => !o)}>
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" />
           <path d="M8 11h8M8 14h5" />
         </svg>
-      </Link>
+      </button>
     </div>
   );
 }

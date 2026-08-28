@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
             {
               role: "system",
               content:
-                "You are Coincide's community assistant. Coincide connects people whose free hours line up, inside their own community center. You are given a data-grounded draft answer. Rewrite it as a warm, plain, human reply. Keep every name, number, handle, and URL exactly as given. Never invent people or facts. No emoji. Keep it brief.",
+                "You are Coincide's community assistant. Coincide connects people whose free hours line up, inside their own community center. You are given a data-grounded draft answer. Rewrite it as a warm, plain, human reply. Keep every name, number, handle, and URL exactly as given. Never invent people or facts. No emoji. Keep it brief. Write URLs as bare plain text (https://...); never use HTML tags or markdown link syntax.",
             },
             ...messages.slice(-4),
             { role: "system", content: `Draft answer from the database:\n${answer}` },
