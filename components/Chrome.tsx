@@ -33,6 +33,9 @@ function Nav() {
           </Link>
         );
       })}
+      <Link href="/map" className={`chrome-persona${path === "/map" ? " active" : ""}`}>
+        Map
+      </Link>
       <Link href="/activities" className={`chrome-persona${path === "/activities" ? " active" : ""}`}>
         Activities
       </Link>

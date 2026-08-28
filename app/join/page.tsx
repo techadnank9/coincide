@@ -29,7 +29,7 @@ export default function Join() {
       return;
     }
     localStorage.setItem("coincide_user", JSON.stringify({ id: d.user_id, name: d.name }));
-    router.push("/activities");
+    router.push("/map");
   };
 
   return (

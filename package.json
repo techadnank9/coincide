@@ -16,6 +16,7 @@
   "dependencies": {
     "@clickhouse/client": "^1.23.1",
     "@types/pg": "^8.23.1",
+    "maplibre-gl": "^3.6.2",
     "next": "^15.5.24",
     "pg": "^8.23.0",
     "react": "^19.2.8",
