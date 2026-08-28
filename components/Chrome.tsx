@@ -33,6 +33,9 @@ function Nav() {
           </Link>
         );
       })}
+      <Link href="/activities" className={`chrome-persona${path === "/activities" ? " active" : ""}`}>
+        Activities
+      </Link>
       <Link href="/join" className={`chrome-persona${path === "/join" ? " active" : ""}`}>
         Join
       </Link>
@@ -63,7 +66,7 @@ export default function Chrome({
         Coincide
       </Link>
       <span className="chrome-thesis">
-        {tagline ? "Where free hours meet hard ones." : ""}
+        {tagline ? "Plans with people nearby, when your hours line up." : ""}
       </span>
       <Suspense>
         <Nav />
