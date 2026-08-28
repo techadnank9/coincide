@@ -74,6 +74,17 @@ export default function MapPage() {
         // the 3D world: globe projection, drifting in space until we descend
         map.on("style.load", () => {
           map.setProjection({ type: "globe" });
+          // hush the basemap: fade big place names, drop everything smaller
+          try {
+            for (const layer of map.getStyle().layers) {
+              if (layer.type !== "symbol") continue;
+              if (/country|state|continent|place.*(city|town|capital)|^place/i.test(layer.id)) {
+                map.setPaintProperty(layer.id, "text-opacity", 0.32);
+              } else {
+                map.setLayoutProperty(layer.id, "visibility", "none");
+              }
+            }
+          } catch {}
         });
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
 
@@ -151,8 +162,9 @@ export default function MapPage() {
               .addTo(map);
           });
 
-          // a handful of people "out and about now": avatar bubbles that pulse
-          const live = d.people.filter((_: any, i: number) => i % 167 === 3).slice(0, 14);
+          // the cast: people with faces, out on the map right now
+          const liveResp = await fetch("/api/live").then((r) => r.json());
+          const live = liveResp.live;
           liveMarkersRef.current = live.map((p: any) => {
             const el = document.createElement("div");
             el.className = "liveAvatar";
@@ -161,28 +173,18 @@ export default function MapPage() {
               ev.stopPropagation();
               const prof = await fetch(`/api/profile?user_id=${p.id}`).then((r) => r.json());
               const total = prof.attended + prof.no_shows;
-              const since = prof.first_seen
-                ? new Date(prof.first_seen).toLocaleString("en-US", { month: "long", year: "numeric" })
-                : null;
-              const wins = prof.windows
-                .map(
-                  (w: any) =>
-                    `<li>${DAYS[w.weekday]} ${fmtMin(w.start_min)}–${fmtMin(w.end_min)} · ${
-                      w.kind === "surplus" ? "free" : "wants company"
-                    }</li>`,
-                )
-                .join("");
-              new maplibregl.Popup({ offset: 26, maxWidth: "300px" })
+              const nextUp = prof.upcoming?.[0];
+              new maplibregl.Popup({ offset: 26, maxWidth: "320px" })
                 .setLngLat([p.lng, p.lat])
                 .setHTML(
                   `<div class="pop profileCard">
                      <img src="${avatar(p.name)}" alt="" width="52" height="52" />
                      <b>${prof.name}</b>
-                     <span>${prof.org}</span>
+                     ${prof.handle ? `<span class="popHandle">${prof.handle}</span>` : ""}
+                     ${prof.bio ? `<span class="popBio">${prof.bio}</span>` : ""}
                      ${total ? `<span class="popStat">Showed up ${prof.attended} of ${total} plans</span>` : ""}
-                     ${since ? `<span>Around since ${since}</span>` : ""}
-                     <ul>${wins || "<li>No hours listed yet</li>"}</ul>
-                     <span class="popScan">${prof.events.toLocaleString()} moments of history · ${prof.scan_ms} ms</span>
+                     ${nextUp ? `<span class="popNext">Next: ${nextUp.title}</span>` : ""}
+                     <a class="popBtn" href="/people/${p.id}">View profile</a>
                    </div>`,
                 )
                 .addTo(map);

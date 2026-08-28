@@ -5,10 +5,14 @@ import { pg, chQuery } from "@/lib/db";
 // ClickHouse (how often they actually show up, how long they've been around).
 export async function GET(req: NextRequest) {
   const userId = Number(req.nextUrl.searchParams.get("user_id"));
-  const [u, av, hist] = await Promise.all([
+  const [u, av, hist, upcoming] = await Promise.all([
     pg.query(
-      `SELECT u.id, u.display_name, u.created_at, o.name AS org
-       FROM users u JOIN orgs o ON o.id = u.org_id WHERE u.id = $1`,
+      `SELECT u.id, u.display_name, u.created_at, o.name AS org,
+              p.handle, p.bio, p.interests
+       FROM users u
+       JOIN orgs o ON o.id = u.org_id
+       LEFT JOIN profiles p ON p.user_id = u.id
+       WHERE u.id = $1`,
       [userId],
     ),
     pg.query(
@@ -24,6 +28,20 @@ export async function GET(req: NextRequest) {
        FROM surplus.hour_events WHERE user_id = {uid: UInt64}`,
       { uid: userId },
     ),
+    pg.query(
+      `SELECT a.id, a.title, a.starts_at, a.place_label, a.capacity,
+              a.host_id = $1 AS hosting,
+              count(m.user_id)::int AS joined
+       FROM activities a
+       LEFT JOIN activity_members m ON m.activity_id = a.id
+       WHERE a.starts_at > now()
+         AND (a.host_id = $1 OR EXISTS (
+           SELECT 1 FROM activity_members x WHERE x.activity_id = a.id AND x.user_id = $1))
+       GROUP BY a.id
+       ORDER BY a.starts_at
+       LIMIT 8`,
+      [userId],
+    ),
   ]);
   if (!u.rows.length) return NextResponse.json({ error: "not found" }, { status: 404 });
   const h = hist.rows[0];
@@ -31,6 +49,18 @@ export async function GET(req: NextRequest) {
     id: userId,
     name: u.rows[0].display_name,
     org: u.rows[0].org,
+    handle: u.rows[0].handle,
+    bio: u.rows[0].bio,
+    interests: u.rows[0].interests ?? [],
+    upcoming: upcoming.rows.map((a) => ({
+      id: Number(a.id),
+      title: a.title,
+      starts_at: a.starts_at,
+      place_label: a.place_label,
+      capacity: Number(a.capacity),
+      joined: a.joined,
+      hosting: a.hosting,
+    })),
     windows: av.rows.map((w) => ({
       weekday: Number(w.weekday),
       start_min: Number(w.start_min),
