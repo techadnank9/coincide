@@ -96,7 +96,7 @@ export default function PersonPage({ params }: { params: Promise<{ id: string }>
           {p.upcoming.map((a: any) => (
             <li key={a.id} className="mktCard">
               <div className="mktWhen mono">{fmtWhen(a.starts_at)}</div>
-              <h3>{a.title}</h3>
+              <h3><a href={`/events/${a.id}`} className="eventLink">{a.title}</a></h3>
               <p className="mktMeta">
                 {a.place_label} · {a.hosting ? "hosting" : "going"} · {a.joined}/{a.capacity} in
               </p>

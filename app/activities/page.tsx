@@ -150,7 +150,7 @@ export default function Activities() {
             return (
               <li key={a.id} className="mktCard">
                 <div className="mktWhen mono">{fmtWhen(a.starts_at)}</div>
-                <h2>{a.title}</h2>
+                <h2><Link href={`/events/${a.id}`} className="eventLink">{a.title}</Link></h2>
                 <p className="mktMeta">
                   {a.place_label} · hosted by {mine ? "you" : a.host_name}
                 </p>

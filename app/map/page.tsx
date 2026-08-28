@@ -115,7 +115,8 @@ export default function MapPage() {
             const pop = document.createElement("div");
             pop.className = "pop";
             pop.innerHTML = `<b>${a.title}</b><span>${fmtWhen(a.starts_at)} · ${a.place_label}</span>
-              <span>Hosted by ${a.host_name} · ${a.joined}/${a.capacity} going</span>`;
+              <span>Hosted by ${a.host_name} · ${a.joined}/${a.capacity} going</span>
+              <a class="popBtn" href="/events/${a.id}">See details</a>`;
             const btn = document.createElement("button");
             btn.textContent = a.joined >= a.capacity ? "Full up" : "Count me in";
             btn.disabled = a.joined >= a.capacity;
