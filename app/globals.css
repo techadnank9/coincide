@@ -1129,3 +1129,171 @@ select {
 .maplibregl-canvas-container canvas {
   outline: none;
 }
+
+/* ——— night map ——— */
+.mapShell.dark {
+  background:
+    radial-gradient(ellipse at 30% 20%, #1a2440 0%, #0b1020 55%, #060912 100%);
+}
+.mapShell.dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.7) 50%, transparent 51%),
+    radial-gradient(1px 1px at 34% 64%, rgba(255,255,255,0.5) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 58% 12%, rgba(255,255,255,0.6) 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 42%, rgba(255,255,255,0.45) 50%, transparent 51%),
+    radial-gradient(1px 1px at 88% 76%, rgba(255,255,255,0.6) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 22% 86%, rgba(255,255,255,0.5) 50%, transparent 51%),
+    radial-gradient(1px 1px at 44% 33%, rgba(255,255,255,0.4) 50%, transparent 51%),
+    radial-gradient(1px 1px at 94% 21%, rgba(255,255,255,0.55) 50%, transparent 51%);
+}
+.mapShell.dark .maplibregl-canvas {
+  filter: invert(0.92) hue-rotate(198deg) saturate(0.55) brightness(0.9) contrast(0.95);
+}
+.mapShell.dark .mapBar {
+  background: rgba(14, 19, 34, 0.82);
+  border-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+.mapShell.dark .chrome-mark,
+.mapShell.dark .chrome-persona {
+  color: #e8ebf4;
+}
+.mapShell.dark .chrome-persona:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.mapShell.dark .chrome-persona.active {
+  background: #e8ebf4;
+  color: #101526;
+}
+.mapShell.dark .slotChip {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #c6cddd;
+}
+.mapShell.dark .slotChip.active {
+  background: #e0973f;
+  border-color: #e0973f;
+  color: #16120a;
+}
+
+/* live avatars */
+.liveAvatar {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+}
+.liveAvatar img {
+  position: relative;
+  z-index: 1;
+  border-radius: 999px;
+  border: 2.5px solid #fff;
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.6);
+  background: #f6f3ec;
+}
+.liveAvatar i {
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 2px solid rgba(224, 151, 63, 0.9);
+  animation: livePulse 2.4s ease-out infinite;
+}
+@keyframes livePulse {
+  0% { transform: scale(0.9); opacity: 0.9; }
+  70% { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* live panel */
+.livePanel {
+  position: absolute;
+  top: 84px;
+  left: 14px;
+  z-index: 1000;
+  background: rgba(252, 251, 247, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 18px;
+  min-width: 250px;
+  max-width: 320px;
+  box-shadow: 0 14px 40px -18px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  animation: riseIn 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.liveTitle {
+  font-weight: 650;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #3f9f5f;
+  box-shadow: 0 0 0 3px rgba(63, 159, 95, 0.25);
+  animation: livePulse 2s ease-out infinite;
+}
+.liveRow {
+  display: flex;
+  gap: 10px;
+  font-size: 0.78rem;
+  align-items: baseline;
+}
+.liveRow > span:first-child {
+  color: var(--muted);
+  min-width: 52px;
+}
+.liveRow em {
+  font-style: normal;
+  background: var(--line-soft);
+  border-radius: 6px;
+  padding: 2px 8px;
+  margin: 0 4px 4px 0;
+  display: inline-block;
+  color: var(--ink-2);
+}
+.liveRow .chipFree {
+  background: color-mix(in oklab, var(--surplus) 18%, var(--card));
+  color: var(--surplus-deep);
+}
+.liveRow .chipHardTag {
+  background: color-mix(in oklab, var(--deficit) 14%, var(--card));
+  color: var(--deficit-deep);
+}
+
+/* profile card popup */
+.profileCard img {
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  margin-bottom: 4px;
+}
+.popStat {
+  font-weight: 600;
+  color: var(--ok) !important;
+}
+.popScan {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem !important;
+  color: var(--muted) !important;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 6px;
+  margin-top: 4px;
+}
+@media (max-width: 860px) {
+  .livePanel {
+    top: auto;
+    bottom: 20px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+}
