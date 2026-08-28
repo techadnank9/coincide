@@ -5,7 +5,9 @@ import { pg } from "@/lib/db";
 export async function GET() {
   const res = await pg.query(
     `SELECT u.id, u.display_name, u.lat, u.lng, p.handle, p.bio, p.interests,
-            o.name AS org
+            o.name AS org,
+            EXISTS (SELECT 1 FROM availability a
+                    WHERE a.user_id = u.id AND a.kind = 'surplus') AS has_free
      FROM profiles p
      JOIN users u ON u.id = p.user_id
      JOIN orgs o ON o.id = u.org_id
@@ -21,6 +23,7 @@ export async function GET() {
       org: r.org,
       lat: r.lat,
       lng: r.lng,
+      has_free: r.has_free,
     })),
   });
 }

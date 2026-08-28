@@ -99,58 +99,6 @@ export default function MapPage() {
         const onReady = async () => {
           const d = await fetch("/api/mappoints").then((r) => r.json());
           if (disposed) return;
-          // everyone, as glowing dots
-          map.addSource("people", {
-            type: "geojson",
-            data: {
-              type: "FeatureCollection",
-              features: d.people.map((p: any) => ({
-                type: "Feature",
-                geometry: { type: "Point", coordinates: [p.lng, p.lat] },
-                properties: {
-                  name: p.name,
-                  org: p.org,
-                  free: p.windows.some((w: any) => w.kind === "surplus") ? 1 : 0,
-                  windows: JSON.stringify(p.windows.slice(0, 4)),
-                },
-              })),
-            },
-          });
-          map.addLayer({
-            id: "people",
-            type: "circle",
-            source: "people",
-            paint: {
-              "circle-radius": ["interpolate", ["linear"], ["zoom"], 3, 1.6, 10, 3.2, 14, 6],
-              "circle-color": ["case", ["==", ["get", "free"], 1], "#e0973f", "#7fa8d4"],
-              "circle-stroke-width": 1,
-              "circle-stroke-color": "rgba(255,255,255,0.55)",
-              "circle-opacity": 0.85,
-            },
-          });
-          map.on("click", "people", (e: any) => {
-            const f = e.features[0];
-            const wins = JSON.parse(f.properties.windows)
-              .map(
-                (w: any) =>
-                  `<li>${DAYS[w.weekday]} ${fmtMin(w.start_min)}–${fmtMin(w.end_min)} · ${
-                    w.kind === "surplus" ? "free" : "wants company"
-                  }</li>`,
-              )
-              .join("");
-            showPopup(
-              new maplibregl.Popup({ offset: 10 })
-                .setLngLat(f.geometry.coordinates)
-                .setHTML(
-                  `<div class="pop"><b>${f.properties.name}</b><span>${f.properties.org}</span>
-                   <ul>${wins || "<li>No hours listed yet</li>"}</ul></div>`,
-                ),
-              map,
-            );
-          });
-          map.on("mouseenter", "people", () => (map.getCanvas().style.cursor = "pointer"));
-          map.on("mouseleave", "people", () => (map.getCanvas().style.cursor = ""));
-
           // activities as star pins
           actMarkersRef.current = d.activities.map((a: any) => {
             const el = document.createElement("div");
@@ -179,9 +127,10 @@ export default function MapPage() {
           const liveResp = await fetch("/api/live").then((r) => r.json());
           const live = liveResp.live;
           liveMarkersRef.current = live.map((p: any) => {
+            const ring = p.has_free ? "#e0973f" : "#7fa8d4";
             const el = document.createElement("div");
             el.className = "liveAvatar";
-            el.innerHTML = `<i></i><img src="${avatar(p.name)}" alt="" width="44" height="44" />`;
+            el.innerHTML = `<i style="border-color:${ring}"></i><img src="${avatar(p.name)}" alt="" width="44" height="44" style="border-color:${ring}" />`;
             el.onclick = async (ev) => {
               ev.stopPropagation();
               const prof = await fetch(`/api/profile?user_id=${p.id}`).then((r) => r.json());
@@ -251,9 +200,6 @@ export default function MapPage() {
   }, []);
 
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !map.getLayer?.("people")) return;
-    map.setLayoutProperty("people", "visibility", filter === "activities" ? "none" : "visible");
     for (const m of actMarkersRef.current)
       m.getElement().style.display = filter === "people" ? "none" : "grid";
     for (const m of liveMarkersRef.current)
@@ -272,7 +218,7 @@ export default function MapPage() {
               className={`slotChip${filter === f ? " active" : ""}`}
               onClick={() => setFilter(f)}
             >
-              {f === "all" ? "Everything" : f === "people" ? `People (${counts.people})` : `Activities (${counts.acts})`}
+              {f === "all" ? "Everything" : f === "people" ? `People (${counts.live})` : `Activities (${counts.acts})`}
             </button>
           ))}
         </nav>
@@ -300,7 +246,7 @@ export default function MapPage() {
           {panelOpen && (
             <>
               <div className="liveRow">
-                <span>Dots</span>
+                <span>Rings</span>
                 <span>
                   <em className="chipFree">
                     <i className="legendDot dotFree" /> has hours to give
