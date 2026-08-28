@@ -1515,3 +1515,15 @@ select {
     margin-left: 0;
   }
 }
+.askThread {
+  max-height: 60vh;
+}
+.askBubble a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+.askBubble strong {
+  font-weight: 650;
+}
