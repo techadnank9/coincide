@@ -1,3 +1,6 @@
 node_modules/
 .clickhouse/
 .next/
+.env.local
+.vercel
+.env*

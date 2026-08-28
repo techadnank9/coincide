@@ -63,7 +63,7 @@ export default function Chrome({
         Coincide
       </Link>
       <span className="chrome-thesis">
-        {tagline ? "We are not matching people. We are routing hours." : ""}
+        {tagline ? "Where free hours meet hard ones." : ""}
       </span>
       <Suspense>
         <Nav />

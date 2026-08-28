@@ -62,7 +62,7 @@ export default function FreightMap({ cells }: { cells: MapCell[] }) {
                   key={band}
                   className="fmap-cell"
                   style={{ background: bg }}
-                  title={`${DAYS[day]} ${fmtBand(band)} — surplus ${c.surplus.toLocaleString()}, deficit ${c.deficit.toLocaleString()}`}
+                  title={`${DAYS[day]} ${fmtBand(band)}: ${c.surplus.toLocaleString()} free, ${c.deficit.toLocaleString()} hard`}
                 />
               );
             })}
@@ -81,9 +81,9 @@ export default function FreightMap({ cells }: { cells: MapCell[] }) {
         </div>
       </div>
       <div className="fmap-legend">
-        <span><i className="swatch" style={{ background: "var(--surplus)" }} /> Surplus — hours people have</span>
-        <span><i className="swatch" style={{ background: "var(--deficit)" }} /> Deficit — hours that are hard</span>
-        <span><i className="swatch" style={{ background: "var(--gap)" }} /> The gap — need with no one routed to it</span>
+        <span><i className="swatch" style={{ background: "var(--surplus)" }} /> Hours people have</span>
+        <span><i className="swatch" style={{ background: "var(--deficit)" }} /> Hours that are hard</span>
+        <span><i className="swatch" style={{ background: "var(--gap)" }} /> Need with no one routed to it</span>
       </div>
     </div>
   );

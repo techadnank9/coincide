@@ -1,9 +1,28 @@
 import { Pool } from "pg";
 import { createClient } from "@clickhouse/client";
 
-export const pg = new Pool({ database: "surplus", max: 8 });
+// POSTGRES_URL (hosted, e.g. ClickHouse Cloud Postgres or Neon) wins over the
+// local default. Hosted providers require TLS.
+export const pg = process.env.POSTGRES_URL
+  ? new Pool({
+      connectionString: process.env.POSTGRES_URL,
+      max: 8,
+      ssl: { rejectUnauthorized: false },
+    })
+  : new Pool({ database: "surplus", max: 8 });
 
-export const ch = createClient({ url: "http://localhost:8123" });
+// CLICKHOUSE_TARGET=cloud in .env.local flips the app onto ClickHouse Cloud;
+// local remains the default for the demo.
+const cloud = process.env.CLICKHOUSE_TARGET === "cloud";
+export const ch = createClient(
+  cloud
+    ? {
+        url: process.env.CLICKHOUSE_CLOUD_URL,
+        username: process.env.CLICKHOUSE_CLOUD_USER,
+        password: process.env.CLICKHOUSE_CLOUD_PASSWORD,
+      }
+    : { url: "http://localhost:8123" },
+);
 
 export interface ChStats {
   rows_read: number;

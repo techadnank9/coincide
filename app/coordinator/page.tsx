@@ -152,8 +152,9 @@ export default function Coordinator() {
           <div className="sectionHead">
             <h2 className="display">Who’s drifting</h2>
             <p className="sectionSub">
-              Deficit trajectory, month over month, unmatched three weeks or more.
-              Attendance is a level — the trajectory is the signal.
+              Hard hours climbing month over month, unmatched for three weeks or
+              more. Their attendance still looks fine. The trend is what gives
+              them away.
             </p>
           </div>
           <ul className="driftList">
@@ -256,8 +257,8 @@ export default function Coordinator() {
                   ))}
                   {!candidates.length && (
                     <p className="sectionSub">
-                      Nobody’s declared surplus covers this hour yet — this is exactly the
-                      gap the freight map shows.
+                      Nobody’s free hours cover this slot yet. This is the gap the
+                      map is showing you.
                     </p>
                   )}
                   {candStats && (
@@ -270,9 +271,8 @@ export default function Coordinator() {
 
               {proposed && (
                 <div className="proposedNote" style={{ animation: "routePulse 900ms ease-out" }}>
-                  <strong>Hour routed.</strong> Match #{proposed.id} proposed to {proposed.name} —
-                  written to Postgres in a transaction, event logged to ClickHouse. Switch to
-                  their persona to accept.
+                  <strong>Hour routed.</strong> Match #{proposed.id} is on its way to{" "}
+                  {proposed.name}. It stays pending until they say yes.
                   <span className="rationale">
                     {rationale ?? <span className="mono">Claude is writing the why…</span>}
                   </span>

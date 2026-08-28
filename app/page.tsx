@@ -1,78 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Chrome from "@/components/Chrome";
 
-// Landing — Persuade mode. The thesis carries the page; the live scan
-// numbers are the proof. No stock imagery, no category clichés.
+// Landing, Persuade mode. Consumer-facing: the thesis carries the page,
+// nothing about the infrastructure underneath.
 export default function Landing() {
-  const [stats, setStats] = useState<{ rows_read: number; elapsed_ms: number } | null>(null);
-
-  useEffect(() => {
-    fetch("/api/map?org_id=1")
-      .then((r) => r.json())
-      .then((d) => setStats({ rows_read: d.rows_read, elapsed_ms: d.elapsed_ms }))
-      .catch(() => {});
-  }, []);
-
   return (
     <div className="page">
       <Chrome tagline={false} />
 
       <section className="landHero">
         <h1 className="display">
-          We are not matching people.
+          Meet people when
           <br />
-          We are routing hours.
+          your hours coincide.
         </h1>
         <p className="landLede">
-          Every loneliness app matches on identity — interests, demographics,
-          personality — then leaves the scheduling to you. The interests were
-          never the bottleneck. The hours were. Coincide starts from the
-          hour: the Tuesday afternoon one person can’t fill, and the Tuesday
-          afternoon another can’t get through.
+          Some hours are easy to give. A retired neighbor’s open Tuesday
+          afternoon. A student’s free Saturday morning. And some hours are
+          hard to get through alone. Coincide brings the two together: you
+          say which hours you have and which ones are tough, and your
+          community’s coordinator turns them into a coffee, a walk, a game
+          of cards.
         </p>
         <div className="landCtas">
-          <Link href="/coordinator" className="proposeBtn landBtn">
-            See the freight map
+          <Link href="/join" className="proposeBtn landBtn">
+            Join now
           </Link>
-          <Link href="/join" className="landBtnGhost">
-            Declare an hour
+          <Link href="/coordinator" className="landBtnGhost">
+            For coordinators
           </Link>
         </div>
-        {stats && (
-          <p className="landProof mono" aria-live="polite">
-            {stats.rows_read.toLocaleString()} hour-events scanned live in{" "}
-            {stats.elapsed_ms} ms to draw one org’s map
-          </p>
-        )}
       </section>
 
       <section className="landHow">
         <div className="landStep">
-          <h2 className="display">Declare time, not identity</h2>
+          <h2 className="display">Say when, not who</h2>
           <p>
-            An hour you have. An hour that’s hard alone. That’s the entire
-            profile — nobody is shopping for a friend, and nobody has to
+            An hour you have. An hour that’s hard alone. That’s your whole
+            profile. Nobody is shopping for a friend here, and nobody has to
             perform one.
           </p>
         </div>
         <div className="landStep">
-          <h2 className="display">The trajectory is the signal</h2>
+          <h2 className="display">Someone keeps an eye out</h2>
           <p>
-            Attendance sheets miss the person who still shows up while their
-            hard hours climb month over month. Coincide ranks people by that
-            slope — across eighteen months of history, in the time a page
-            takes to load.
+            It’s easy to look fine and still be sinking. Coincide helps your
+            coordinator notice when the hard hours start piling up, long
+            before anyone stops coming to Thursday lunch.
           </p>
         </div>
         <div className="landStep">
-          <h2 className="display">A person routes the hour</h2>
+          <h2 className="display">One yes at a time</h2>
           <p>
             No algorithmic introductions. A coordinator at your own center
-            reads the map, sees why each candidate scores what they score,
-            and proposes one hour. Both sides accept, or nothing happens.
+            proposes one hour with one person. Both of you say yes, or
+            nothing happens at all.
           </p>
         </div>
       </section>
@@ -80,19 +64,16 @@ export default function Landing() {
       <section className="landSafety">
         <h2 className="display">Built to be declined</h2>
         <p>
-          Matches stay inside a verified organization. First meetings default
-          to public places. Consent is one revocable row you own. A no-show is
-          never punished — it just teaches the routing. The system’s job is to
-          make one good hour easy, not to make anyone feel watched.
+          Everything stays inside your own center. First meetings happen in
+          public places. Nobody gets punished for missing an hour, and you can
+          take your hours back whenever you want. The whole point is to make
+          one good hour easy, not to make anyone feel watched.
         </p>
       </section>
 
       <footer className="foot">
-        <span>
-          Postgres holds who people are. ClickHouse holds what’s happened to
-          them. Neither does this alone.
-        </span>
-        <span className="mono">Coincide — routing hours</span>
+        <span>Made for the people who hold communities together.</span>
+        <span>Coincide</span>
       </footer>
     </div>
   );

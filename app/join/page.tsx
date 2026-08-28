@@ -43,15 +43,15 @@ export default function Join() {
           {/* HERO MEDIA SLOT — shoot on the day: empty chairs, a full room, a
               bench in Japantown. Drop the photo at /public/hero.jpg and swap
               this placeholder for an <img>. No stock photography. */}
-          <span className="mono">hero media — shot on site</span>
+          <span className="mono">photo slot</span>
         </div>
 
         <div className="joinCopy">
           <h1 className="display">Give an hour.<br />Name a hard one.</h1>
           <p>
-            You don’t have to be looking for a friend. A Tuesday afternoon you’d
-            like filled, or one you can’t get through — that’s all the system
-            needs. Your center’s coordinator routes the rest.
+            You don’t have to be looking for a friend. A Tuesday afternoon
+            you’d like filled, or one that’s hard to get through, is all we
+            need to know. Your center’s coordinator takes it from there.
           </p>
         </div>
 
@@ -94,14 +94,14 @@ export default function Join() {
               Declare the hour
             </button>
             <p className="joinFine">
-              Within your own center only. First meetings in public places. You can
-              revoke this any time — consent lives in one row and it’s yours.
+              Only people at your own center can see this. First meetings happen
+              in public places, and you can take your hours back any time.
             </p>
           </form>
         ) : (
           <div className="proposedNote" style={{ animation: "routePulse 900ms ease-out" }}>
-            <strong>You’re in.</strong> Member #{done}, live in the same system as
-            everyone on the coordinator’s map — look for the “signed up live” mark.
+            <strong>You’re in.</strong> Your hour is on your coordinator’s map now.
+            When it lines up with someone else’s, you’ll hear from them.
           </div>
         )}
       </section>

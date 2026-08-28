@@ -15,9 +15,9 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Coincide — routing hours",
+  title: "Coincide",
   description:
-    "We are not matching people. We are routing hours. Postgres holds who exists; ClickHouse holds what has happened.",
+    "Coincide routes spare hours to the people having a hard time filling theirs. Declare an hour, and a coordinator you know does the rest.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

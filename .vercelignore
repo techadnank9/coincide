@@ -1,0 +1,4 @@
+.clickhouse
+node_modules
+.next
+.git
