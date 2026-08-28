@@ -39,6 +39,9 @@ function Nav() {
       <Link href="/activities" className={`chrome-persona${path === "/activities" ? " active" : ""}`}>
         Activities
       </Link>
+      <Link href="/chat" className={`chrome-persona${path.startsWith("/chat") ? " active" : ""}`}>
+        Chats
+      </Link>
       <Link href="/join" className={`chrome-persona${path === "/join" ? " active" : ""}`}>
         Join
       </Link>

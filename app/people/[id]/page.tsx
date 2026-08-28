@@ -62,6 +62,11 @@ export default function PersonPage({ params }: { params: Promise<{ id: string }>
             {p.handle && <p className="personHandle mono">{p.handle}</p>}
             <p className="sectionSub">{p.org}</p>
           </div>
+          {me && me.id !== p.id && (
+            <a href={`/chat/${p.id}`} className="proposeBtn landBtn msgBtn">
+              Message {p.name.split(" ")[0]}
+            </a>
+          )}
           {total > 0 && (
             <div className="personStats">
               <strong>{p.attended}</strong> of {total} plans showed up to
