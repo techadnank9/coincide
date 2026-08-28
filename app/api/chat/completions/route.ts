@@ -1,9 +1,82 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chQuery, pg } from "@/lib/db";
 
-// OpenAI-compatible chat completions endpoint, so LibreChat can talk to the
-// org's data as a custom endpoint (librechat.yaml snippet in the README).
-// "Who's drifting?" → live ClickHouse trajectory query, names back in seconds.
+const DAY_WORDS: Record<string, number> = {
+  sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
+};
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+// Match people to plain-language criteria: days, times of day, interests.
+async function matchPeople(query: string): Promise<string> {
+  const q = query.toLowerCase();
+  const wantDays = Object.entries(DAY_WORDS)
+    .filter(([w]) => q.includes(w) || q.includes(w.slice(0, 3) + " "))
+    .map(([, n]) => n);
+  let band: [number, number] | null = null;
+  if (/morning/.test(q)) band = [300, 720];
+  else if (/afternoon/.test(q)) band = [720, 1020];
+  else if (/evening|night/.test(q)) band = [1020, 1380];
+
+  const res = await pg.query(
+    `SELECT u.id, u.display_name, p.handle, p.bio, p.interests, o.name AS org,
+            coalesce(json_agg(json_build_object('weekday', a.weekday, 'start_min', a.start_min,
+              'end_min', a.end_min, 'kind', a.kind)) FILTER (WHERE a.id IS NOT NULL), '[]') AS windows
+     FROM profiles p
+     JOIN users u ON u.id = p.user_id
+     JOIN orgs o ON o.id = u.org_id
+     LEFT JOIN availability a ON a.user_id = u.id
+     GROUP BY u.id, p.handle, p.bio, p.interests, o.name`,
+  );
+
+  const scored = res.rows
+    .map((r) => {
+      const interests: string[] = r.interests ?? [];
+      const hitTags = interests.filter((t) =>
+        t.toLowerCase().split(/\s+/).some((w) => w.length > 3 && q.includes(w)),
+      );
+      const bioHit = (r.bio ?? "")
+        .toLowerCase()
+        .split(/\W+/)
+        .some((w: string) => w.length > 4 && q.includes(w));
+      const wins = (r.windows as any[]).filter(
+        (w) =>
+          (!wantDays.length || wantDays.includes(Number(w.weekday))) &&
+          (!band || (Number(w.start_min) < band[1] && Number(w.end_min) > band[0])),
+      );
+      const timeAsked = wantDays.length > 0 || band !== null;
+      let score = hitTags.length * 3 + (bioHit ? 1 : 0);
+      if (timeAsked && wins.length) score += 2;
+      if (timeAsked && !wins.length) score -= 2;
+      return { r, hitTags, wins, score };
+    })
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  if (!scored.length) {
+    return (
+      `Nobody jumped out for that. Try naming a day, a time of day, or an interest — ` +
+      `for example: "someone free on Tuesday evenings who likes chess" or "morning walkers near me".`
+    );
+  }
+  const lines = scored.map(({ r, hitTags, wins }, i) => {
+    const why = [
+      hitTags.length ? `into ${hitTags.join(", ")}` : null,
+      wins.length
+        ? `free ${DAYS[Number(wins[0].weekday)]} ${String(Math.floor(wins[0].start_min / 60)).padStart(2, "0")}:${String(wins[0].start_min % 60).padStart(2, "0")}`
+        : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    return `${i + 1}. **${r.display_name}** (${r.handle}, ${r.org}) — ${r.bio}\n   ${why ? why + " · " : ""}profile: https://trycoincide.vercel.app/people/${r.id}`;
+  });
+  return `People whose hours and interests fit what you asked:\n\n${lines.join("\n\n")}\n\nOpen a profile to see their next plans, or message them right there.`;
+}
+
+// OpenAI-compatible chat completions endpoint, so LibreChat can talk to
+// Coincide as a custom endpoint (librechat.yaml snippet in the README).
+// Members: "find me people free Tuesday evenings who like chess".
+// Coordinators: "Who's drifting?" → live ClickHouse trajectory scan.
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const messages: { role: string; content: string }[] = body.messages ?? [];
@@ -52,10 +125,48 @@ export async function POST(req: NextRequest) {
       `${stats.rows_read.toLocaleString()} events scanned in ${stats.elapsed_ms} ms:\n\n` +
       (lines.join("\n") || "Nobody is drifting right now.") +
       `\n\nAttendance is a level. The trajectory is the signal.`;
+  } else if (/find|match|meet|who|people|someone|anyone|free|likes?|into|near/i.test(last)) {
+    answer = await matchPeople(last);
   } else {
     answer =
-      `I answer from the org's hour ledger. Try: "Who's drifting?" — ` +
-      `I'll rank people whose hard hours are climbing month over month while their attendance stays flat.`;
+      `I match people by hours and interests. Try: "someone free Tuesday evenings who likes chess", ` +
+      `"morning walkers", or (for coordinators) "who's drifting?".`;
+  }
+
+  // With an OpenAI key, let a model phrase the reply warmly; the facts,
+  // names, and links come only from our data above.
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 12000);
+      const oa = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        signal: ctrl.signal,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          temperature: 0.4,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are Coincide's community assistant. Coincide connects people whose free hours line up, inside their own community center. You are given a data-grounded draft answer. Rewrite it as a warm, plain, human reply. Keep every name, number, handle, and URL exactly as given. Never invent people or facts. No emoji. Keep it brief.",
+            },
+            ...messages.slice(-4),
+            { role: "system", content: `Draft answer from the database:\n${answer}` },
+          ],
+        }),
+      });
+      clearTimeout(t);
+      if (oa.ok) {
+        const od = await oa.json();
+        const text = od.choices?.[0]?.message?.content;
+        if (text) answer = text;
+      }
+    } catch {}
   }
 
   const model = body.model ?? "surplus-coordinator";
