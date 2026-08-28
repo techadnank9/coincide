@@ -1,9 +1,9 @@
-# SURPLUS — product context
+# Coincide — product context
 
 *(Inferred from SURPLUS_BUILD.md, the hackathon build brief; user directed proceed-without-interview.)*
 
 ## What it is
-A routing system for social hours. People declare **time** (surplus hours they have,
+Coincide is a routing system for social hours. People declare **time** (surplus hours they have,
 deficit hours that are hard), not identity. Coordinators at verified orgs (senior
 centers, campuses, neighborhoods) see the gap between surplus and deficit hours and
 route one person an hour with a ranked, legible matching score. Thesis: **we are not

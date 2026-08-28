@@ -54,7 +54,7 @@ export default function Chrome({ stats }: { stats?: QueryStats | null }) {
   return (
     <header className="chrome">
       <Link href="/coordinator" className="chrome-mark display">
-        Surplus
+        Coincide
       </Link>
       <span className="chrome-thesis">We are not matching people. We are routing hours.</span>
       <Suspense>

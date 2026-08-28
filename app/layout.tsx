@@ -15,7 +15,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SURPLUS — routing hours",
+  title: "Coincide — routing hours",
   description:
     "We are not matching people. We are routing hours. Postgres holds who exists; ClickHouse holds what has happened.",
 };

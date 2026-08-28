@@ -49,6 +49,7 @@ export default function Coordinator() {
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [candStats, setCandStats] = useState<QueryStats | null>(null);
   const [proposed, setProposed] = useState<{ id: number; name: string } | null>(null);
+  const [rationale, setRationale] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -109,7 +110,19 @@ export default function Coordinator() {
         }),
       }).then((r) => r.json());
       setBusy(false);
-      if (res.match_id) setProposed({ id: res.match_id, name: c.name });
+      if (res.match_id) {
+        setProposed({ id: res.match_id, name: c.name });
+        setRationale(null);
+        const slotLabel = `${DAYS[slot.weekday]} ${fmtMin(slot.start_min)}–${fmtMin(slot.end_min)}`;
+        fetch("/api/rationale", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ person: { name: selected.name }, candidate: c, slot: slotLabel }),
+        })
+          .then((r) => r.json())
+          .then((d) => setRationale(d.rationale))
+          .catch(() => {});
+      }
     },
     [selected, slot],
   );
@@ -260,6 +273,9 @@ export default function Coordinator() {
                   <strong>Hour routed.</strong> Match #{proposed.id} proposed to {proposed.name} —
                   written to Postgres in a transaction, event logged to ClickHouse. Switch to
                   their persona to accept.
+                  <span className="rationale">
+                    {rationale ?? <span className="mono">Claude is writing the why…</span>}
+                  </span>
                 </div>
               )}
             </>
