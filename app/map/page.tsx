@@ -197,8 +197,16 @@ export default function MapPage() {
             });
           }, 3500);
         };
-        if (map.loaded()) onReady();
-        else map.once("load", onReady);
+        let readyRan = false;
+        const ready = () => {
+          if (readyRan) return;
+          readyRan = true;
+          onReady();
+        };
+        // v5's "load" can stall; style.load is what addSource/Marker need
+        if (map.isStyleLoaded?.()) ready();
+        map.on("style.load", ready);
+        map.once("load", ready);
         map.on("error", () => {});
       } catch (err: any) {
         setNote(`map failed: ${err?.message ?? err}`);
